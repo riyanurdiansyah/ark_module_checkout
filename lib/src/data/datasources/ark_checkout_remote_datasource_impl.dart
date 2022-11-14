@@ -1,9 +1,16 @@
-import 'package:ark_module_setup/ark_module_setup.dart';
+import 'package:ark_module_checkout/ark_module_checkout.dart';
+import 'package:ark_module_checkout/src/core/exception_handling.dart';
+import 'package:ark_module_checkout/src/core/interceptor.dart';
+import 'package:ark_module_checkout/utils/app_url.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-
-import 'ark_checkout_remote_datasource.dart';
+import 'package:dio/dio.dart';
 
 class ArkCheckoutRemoteDataSourceImpl implements ArkCheckoutRemoteDataSource {
+  late Dio dio;
+  ArkCheckoutRemoteDataSourceImpl({Dio? dio}) {
+    this.dio = dio ?? Dio();
+  }
+
   @override
   Stream<CoinDTO> streamCoin(String userId) {
     Stream<DocumentSnapshot<Map<String, dynamic>>> stream =
@@ -32,6 +39,29 @@ class ArkCheckoutRemoteDataSourceImpl implements ArkCheckoutRemoteDataSource {
           );
         }
       },
+    );
+  }
+
+  @override
+  Future<CouponDTO> checkCoupon(String token, String kode) async {
+    await dioInterceptor(dio, token);
+    final response = await dio.get(checkCouponUrl, queryParameters: {
+      "code": kode,
+    });
+    int code = response.statusCode ?? 500;
+    if (code == 200) {
+      if (response.data['success']) {
+        return CouponDTO.fromJson(response.data);
+      }
+      return CouponDTO.fromJson({
+        "success": false,
+        "data": {},
+      });
+    }
+    return ExceptionHandleResponseAPI.execute(
+      code,
+      response,
+      'Error Get User Status... failed connect to server',
     );
   }
 }

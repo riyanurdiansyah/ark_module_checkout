@@ -1,6 +1,8 @@
-import 'package:ark_module_checkout/src/data/datasources/ark_checkout_remote_datasource.dart';
-import 'package:ark_module_checkout/src/domain/repositories/ark_checkout_repository.dart';
-import 'package:ark_module_setup/ark_module_setup.dart';
+import 'dart:developer';
+import 'package:ark_module_checkout/ark_module_checkout.dart';
+import 'package:ark_module_checkout/src/core/exception_handling.dart';
+import 'package:dartz/dartz.dart';
+import 'package:ark_module_checkout/src/core/failures.dart';
 
 class ArkCheckoutRepositoryImpl implements ArkCheckoutRepository {
   final ArkCheckoutRemoteDataSource dataSource;
@@ -9,5 +11,17 @@ class ArkCheckoutRepositoryImpl implements ArkCheckoutRepository {
   @override
   Stream<CoinEntity> streamCoin(String id) {
     return dataSource.streamCoin(id).map((event) => event);
+  }
+
+  @override
+  Future<Either<Failure, CouponEntity>> checkCoupon(
+      String token, String kode) async {
+    try {
+      final coupon = await dataSource.checkCoupon(token, kode);
+      return Right(coupon);
+    } catch (e) {
+      log("ERROR CHECKOUT REPO CHECK COUPON: ${e.toString()}");
+      return ExceptionHandleResponse.execute(e);
+    }
   }
 }
