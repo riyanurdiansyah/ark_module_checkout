@@ -1,4 +1,6 @@
 import 'package:ark_module_checkout/ark_module_checkout.dart';
+import 'package:ark_module_checkout/src/presentation/pages/widgets/ark_form_buyer.dart';
+import 'package:ark_module_checkout/src/presentation/pages/widgets/ark_payment_method.dart';
 import 'package:ark_module_checkout/utils/app_empty_entity.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/cupertino.dart';
@@ -7,13 +9,19 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
 
 class ArkCheckoutPage extends StatelessWidget {
-  ArkCheckoutPage({Key? key}) : super(key: key);
+  ArkCheckoutPage({
+    Key? key,
+    this.isPreptest = false,
+  }) : super(key: key);
+
+  final bool? isPreptest;
 
   final _checkoutC = Get.find<ArkCheckoutController>();
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      key: _checkoutC.scaffoldKey,
       backgroundColor: const Color(0xFFF3F4F5),
       appBar: AppBar(
         titleSpacing: 0,
@@ -187,8 +195,129 @@ class ArkCheckoutPage extends StatelessWidget {
               );
             },
           ),
+          Obx(() {
+            if (_checkoutC.isUsingCoupon.value) {
+              return Container(
+                padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 6),
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(5),
+                  color: const Color(0xFFD6F6D2),
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Row(
+                      children: [
+                        SvgPicture.asset(
+                          'assets/svg/disc.svg',
+                        ),
+                        const SizedBox(
+                          width: 4,
+                        ),
+                        AppText.labelW500(
+                          _checkoutC.couponDetail.value.data.code.toUpperCase(),
+                          12,
+                          const Color(
+                            0xFF6B9673,
+                          ),
+                        ),
+                      ],
+                    ),
+                    if (double.parse(
+                                _checkoutC.couponDetail.value.data.amount) ==
+                            100 &&
+                        _checkoutC.couponDetail.value.data.discountType ==
+                            "percent")
+                      AppText.labelW500(
+                        ' - ${currencyFormatter.format(_checkoutC.price.value)}',
+                        13,
+                        const Color(
+                          0xFF08A524,
+                        ),
+                      ),
+                    if (double.parse(
+                                _checkoutC.couponDetail.value.data.amount) !=
+                            100 &&
+                        _checkoutC.couponDetail.value.data.discountType ==
+                            "percent")
+                      AppText.labelW500(
+                        'Diskon -${currencyFormatter.format(((int.parse(_checkoutC.couponDetail.value.data.amount) / 100) * _checkoutC.price.value) + _checkoutC.randomNumber.value)}',
+                        13,
+                        const Color(
+                          0xFF08A524,
+                        ),
+                      ),
+                    if (_checkoutC.couponDetail.value.data.discountType ==
+                        "fixed_cart")
+                      AppText.labelW500(
+                        'Diskon -${currencyFormatter.format(int.parse(_checkoutC.couponDetail.value.data.amount))}',
+                        13,
+                        const Color(
+                          0xFF08A524,
+                        ),
+                      ),
+                  ],
+                ),
+              );
+            }
+
+            return const SizedBox();
+          }),
+          Obx(
+            () => _checkoutC.isUsingCoin.value
+                ? Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Expanded(
+                        child: AppText.labelW500(
+                          "Arkademi Koin yang digunakan",
+                          11,
+                          const Color(
+                            0xFF838589,
+                          ),
+                          maxLines: 2,
+                        ),
+                      ),
+                      AppText.labelW500(
+                        ' -${numberFormat.format(_checkoutC.maxCoin.value)} Koin',
+                        12,
+                        const Color(
+                          0xFF838589,
+                        ),
+                      ),
+                    ],
+                  )
+                : Container(),
+          ),
           const SizedBox(
-            height: 10,
+            height: 20,
+          ),
+          Container(
+            color: const Color(0xFFD3D4D6),
+            width: Get.width,
+            height: 2,
+            child: LayoutBuilder(
+              builder: (context, constraint) => Flex(
+                mainAxisSize: MainAxisSize.max,
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                direction: Axis.horizontal,
+                children: List.generate(
+                  (constraint.constrainWidth() / 8).floor(),
+                  (index) => const SizedBox(
+                    width: 4,
+                    height: 2,
+                    child: DecoratedBox(
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(
+            height: 20,
           ),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -384,13 +513,13 @@ class ArkCheckoutPage extends StatelessWidget {
             if (_checkoutC.couponDetail.value != emptyCoupon) {
               return Row(
                 children: [
-                  if (_checkoutC.isUsingCoin.value)
+                  if (_checkoutC.isUsingCoupon.value)
                     Image.asset(
                       'assets/images/new_check_green.png',
                       height: 16,
                       width: 16,
                     ),
-                  if (!_checkoutC.couponDetail.value.success &&
+                  if (!_checkoutC.couponDetail.value.success ||
                       _checkoutC.errorMsgCoupon.value.isNotEmpty)
                     const Icon(
                       Icons.cancel,
@@ -417,9 +546,72 @@ class ArkCheckoutPage extends StatelessWidget {
 
             return const SizedBox();
           }),
+          Obx(() {
+            if ((_checkoutC.isUsingCoin.value &&
+                    _checkoutC.maxCoin.value >= _checkoutC.price.value) ||
+                (_checkoutC.isUsingCoupon.value &&
+                    double.parse(_checkoutC.couponDetail.value.data.amount) ==
+                        100 &&
+                    _checkoutC.couponDetail.value.data.discountType ==
+                        "percent")) {
+              return const SizedBox();
+            }
+            return Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const SizedBox(
+                  height: 20,
+                ),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 0),
+                  child: AppText.labelBold(
+                    "Metode Pembayaran",
+                    18,
+                    Colors.black,
+                  ),
+                ),
+                const SizedBox(
+                  height: 14,
+                ),
+                ArkPaymentMethod(isPreptest: false),
+              ],
+            );
+          }),
           const SizedBox(
-            height: 8,
+            height: 35,
           ),
+          Row(
+            children: [
+              AppText.labelW800(
+                'Data Anda',
+                15,
+                const Color(
+                  0xFF333539,
+                ),
+              ),
+              const Spacer(),
+              Obx(
+                () => GestureDetector(
+                  onTap: () => _checkoutC.fnChangeEdit(),
+                  child: AppText.labelW700(
+                    _checkoutC.isEditedTextField.value ? 'Simpan' : 'Edit',
+                    12,
+                    const Color(
+                      0xFF1B91D9,
+                    ),
+                    textAlign: TextAlign.right,
+                  ),
+                ),
+              ),
+              const SizedBox(
+                width: 6,
+              ),
+            ],
+          ),
+          const SizedBox(
+            height: 16,
+          ),
+          ArkFormBuyer(),
         ],
       ),
       bottomNavigationBar: Obx(
@@ -483,33 +675,7 @@ class ArkCheckoutPage extends StatelessWidget {
                             Obx(
                               () => CupertinoSwitch(
                                 value: _checkoutC.isUsingCoin.value,
-                                onChanged: (value) {
-                                  // if (_lcC.detailClass.value.data![0].course!
-                                  //             .coin ==
-                                  //         null ||
-                                  //     _lcC.detailClass.value.data![0].course!.coin!
-                                  //             .coinFlag ==
-                                  //         "1") {
-                                  //   if (snapshot.data?.coins == 0) {
-                                  //   } else if (_checkoutC
-                                  //       .isUseCoupon.isTrue) {
-                                  //     ScaffoldMessenger.of(context).showSnackBar(
-                                  //         AppSnackbar.defaultSnackbar(
-                                  //             'Koin tidak dapat digabungkan dengan kupon'));
-                                  //   } else {
-                                  //     _checkoutC.changeUseCoin(
-                                  //         value,
-                                  //         snapshot.data?.coins,
-                                  //         int.parse(widget.priceFromWebview == null
-                                  //             ? tempPrice!
-                                  //             : widget.priceFromWebview!));
-                                  //   }
-                                  // } else {
-                                  //   ScaffoldMessenger.of(context).showSnackBar(
-                                  //       AppSnackbar.defaultSnackbar(
-                                  //           'Koin tidak dapat digunakan pada kelas ini'));
-                                  // }
-                                },
+                                onChanged: (value) => _checkoutC.onSwitchCoin(),
                               ),
                             ),
                           ],
@@ -520,6 +686,7 @@ class ArkCheckoutPage extends StatelessWidget {
                     return const SizedBox();
                   },
                 ),
+              const Divider(),
               const SizedBox(
                 height: 10,
               ),
@@ -527,9 +694,238 @@ class ArkCheckoutPage extends StatelessWidget {
                 padding: const EdgeInsets.symmetric(horizontal: 20),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: const [],
+                  children: [
+                    Obx(() {
+                      if (!_checkoutC.isUsingCoupon.value &&
+                          !_checkoutC.isUsingCoin.value) {
+                        return Text(
+                          'Diskon -${currencyFormatter.format(_checkoutC.randomNumber.value)}',
+                          style: const TextStyle(
+                            fontSize: 12,
+                            color: Color(0xFF08A524),
+                            fontWeight: FontWeight.w500,
+                          ),
+                        );
+                      }
+
+                      if (_checkoutC.isUsingCoin.value) {
+                        if (_checkoutC.maxCoin.value >=
+                            _checkoutC.price.value) {
+                          return AppText.labelW500(
+                            'Diskon -${currencyFormatter.format(_checkoutC.price.value)}',
+                            13,
+                            const Color(
+                              0xFF08A524,
+                            ),
+                          );
+                        }
+
+                        return AppText.labelW500(
+                          'Diskon -${currencyFormatter.format(_checkoutC.randomNumber.value + _checkoutC.maxCoin.value)}',
+                          13,
+                          const Color(
+                            0xFF08A524,
+                          ),
+                        );
+                      }
+
+                      if (_checkoutC.isUsingCoupon.value) {
+                        if (double.parse(_checkoutC
+                                    .couponDetail.value.data.amount) ==
+                                100 &&
+                            _checkoutC.couponDetail.value.data.discountType ==
+                                "percent") {
+                          return AppText.labelW500(
+                            'Diskon -${currencyFormatter.format(_checkoutC.price.value)}',
+                            13,
+                            const Color(
+                              0xFF08A524,
+                            ),
+                          );
+                        }
+
+                        if (double.parse(_checkoutC
+                                    .couponDetail.value.data.amount) !=
+                                100 &&
+                            _checkoutC.couponDetail.value.data.discountType ==
+                                "percent") {
+                          return AppText.labelW500(
+                            'Diskon -${currencyFormatter.format(((int.parse(_checkoutC.couponDetail.value.data.amount) / 100) * _checkoutC.price.value) + _checkoutC.randomNumber.value)}',
+                            13,
+                            const Color(
+                              0xFF08A524,
+                            ),
+                          );
+                        }
+
+                        if (_checkoutC.couponDetail.value.data.discountType ==
+                            "fixed_cart") {
+                          return AppText.labelW500(
+                            'Diskon -${currencyFormatter.format(int.parse(_checkoutC.couponDetail.value.data.amount))}',
+                            13,
+                            const Color(
+                              0xFF08A524,
+                            ),
+                          );
+                        }
+                      }
+
+                      return const Text(
+                        "-Rp 0",
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 14.5,
+                        ),
+                      );
+                    }),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.end,
+                      children: [
+                        Obx(() {
+                          if (_checkoutC.isUsingCoin.value &&
+                              _checkoutC.maxCoin.value >=
+                                  _checkoutC.price.value) {
+                            return const Text(
+                              "Rp 0",
+                              style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                color: Colors.black,
+                                fontSize: 18,
+                              ),
+                            );
+                          }
+
+                          if (_checkoutC.isUsingCoin.value) {
+                            return Text(
+                              currencyFormatter.format(
+                                _checkoutC.price.value -
+                                    _checkoutC.maxCoin.value,
+                              ),
+                              style: const TextStyle(
+                                fontWeight: FontWeight.bold,
+                                color: Colors.black,
+                                fontSize: 18,
+                              ),
+                            );
+                          }
+
+                          if (_checkoutC.isUsingCoupon.value &&
+                              double.parse(_checkoutC
+                                      .couponDetail.value.data.amount) ==
+                                  100 &&
+                              _checkoutC.couponDetail.value.data.discountType ==
+                                  "percent") {
+                            return const Text(
+                              "Rp 0",
+                              style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                color: Colors.black,
+                                fontSize: 18,
+                              ),
+                            );
+                          }
+
+                          if (_checkoutC.isUsingCoupon.value &&
+                              _checkoutC.couponDetail.value.data.discountType ==
+                                  "percent") {
+                            return Text(
+                              currencyFormatter.format(
+                                _checkoutC.price.value -
+                                    ((double.parse(_checkoutC.couponDetail.value
+                                                    .data.amount)
+                                                .toInt() /
+                                            100) *
+                                        _checkoutC.price.value),
+                              ),
+                              style: const TextStyle(
+                                fontWeight: FontWeight.bold,
+                                color: Colors.black,
+                                fontSize: 18,
+                              ),
+                            );
+                          }
+
+                          if (_checkoutC.isUsingCoin.value) {
+                            return Text(
+                              currencyFormatter.format(
+                                _checkoutC.price.value -
+                                    double.parse(_checkoutC
+                                        .couponDetail.value.data.amount),
+                              ),
+                              style: const TextStyle(
+                                fontWeight: FontWeight.bold,
+                                color: Colors.black,
+                                fontSize: 18,
+                              ),
+                            );
+                          }
+                          return Text(
+                            currencyFormatter.format(_checkoutC.price.value -
+                                _checkoutC.randomNumber.value),
+                            style: const TextStyle(
+                              fontWeight: FontWeight.bold,
+                              color: Colors.black,
+                              fontSize: 18,
+                            ),
+                          );
+                        }),
+                        Obx(() {
+                          if (_checkoutC.isUsingCoin.value ||
+                              _checkoutC.isUsingCoupon.value) {
+                            return const Text('Cashback koin tidak berlaku',
+                                style: TextStyle(
+                                    fontSize: 10,
+                                    color: Color.fromRGBO(148, 150, 155, 1)));
+                          }
+
+                          return Row(
+                            children: [
+                              Image.asset('assets/images/coins.png',
+                                  height: 10),
+                              const SizedBox(width: 5),
+                              Text(
+                                  'Cashback ${numberFormat.format(double.parse(_checkoutC.detailCourse.value.coinCashback).round())} koin',
+                                  style: const TextStyle(
+                                      fontSize: 10,
+                                      color: Color.fromRGBO(148, 150, 155, 1))),
+                            ],
+                          );
+                        })
+                      ],
+                    )
+                  ],
                 ),
               ),
+              const SizedBox(height: 15),
+              Obx(
+                () => Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 20),
+                  height: 45,
+                  child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(7)),
+                      primary: const Color(0xFFFF8017),
+                    ),
+                    onPressed: _checkoutC.paymentMethod
+                                .where((e) => e.status == true)
+                                .toList()
+                                .isEmpty ||
+                            _checkoutC.selectedPaymentMethod.value.id == 99
+                        ? null
+                        : () async {},
+                    child: const Text(
+                      'Bayar',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 15),
             ],
           ),
         ),

@@ -1,5 +1,20 @@
 import 'package:ark_module_checkout/ark_module_checkout.dart';
+import 'package:ark_module_checkout/src/domain/entities/course_coin_entity.dart';
+import 'package:ark_module_checkout/src/domain/entities/payment_method_entity.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+
+final PaymentMethodEntity emptyPaymentMethod = PaymentMethodEntity(
+  chanel: '',
+  code: '',
+  description: '',
+  id: 99,
+  image: '',
+  limit: 0,
+  status: false,
+  tipe: 0,
+  title: '',
+  titleType: '',
+);
 
 final CouponEntity emptyCoupon = CouponEntity(
   success: false,
@@ -61,6 +76,11 @@ final CourseDataEntity courseEmpty = CourseDataEntity(
     reference: "",
   ),
   ygAkanDipelajariWeb: const [],
+  coin: CourseCoinEntity(
+    coinFlag: "1",
+    coinDescription: "",
+    coinValue: "",
+  ),
 );
 
 final CoinEntity coinEmpty = CoinEntity(

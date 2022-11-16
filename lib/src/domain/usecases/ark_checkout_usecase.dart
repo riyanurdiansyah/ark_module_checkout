@@ -1,5 +1,6 @@
 import 'package:ark_module_checkout/ark_module_checkout.dart';
 import 'package:ark_module_checkout/src/core/failures.dart';
+import 'package:ark_module_checkout/src/domain/entities/payment_method_entity.dart';
 import 'package:dartz/dartz.dart';
 
 class ArkCheckoutUseCase {
@@ -8,6 +9,9 @@ class ArkCheckoutUseCase {
   ArkCheckoutUseCase(this._repository);
 
   Stream<CoinEntity> streamCoin(String id) => _repository.streamCoin(id);
+
+  Stream<List<PaymentMethodEntity>> streamPaymentMethod() =>
+      _repository.streamPaymentMehtod();
 
   Future<Either<Failure, CouponEntity>> checkCoupon(
           String token, String kode) async =>

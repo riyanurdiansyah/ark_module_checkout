@@ -1,6 +1,9 @@
+import 'dart:convert';
+
 import 'package:ark_module_checkout/ark_module_checkout.dart';
 import 'package:ark_module_checkout/src/core/exception_handling.dart';
 import 'package:ark_module_checkout/src/core/interceptor.dart';
+import 'package:ark_module_checkout/src/data/dto/payment_method_dto.dart';
 import 'package:ark_module_checkout/utils/app_url.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:dio/dio.dart';
@@ -63,5 +66,17 @@ class ArkCheckoutRemoteDataSourceImpl implements ArkCheckoutRemoteDataSource {
       response,
       'Error Get User Status... failed connect to server',
     );
+  }
+
+  @override
+  Stream<List<PaymentMethodDTO>> streamPaymentMethod() {
+    Stream<QuerySnapshot<Map<String, dynamic>>> stream = FirebaseFirestore
+        .instance
+        .collection("payment_method")
+        .orderBy('id')
+        .snapshots();
+    return stream.map((val) => val.docs).map((ev) {
+      return paymentFromJson(json.encode(ev.map((e) => e.data()).toList()));
+    });
   }
 }

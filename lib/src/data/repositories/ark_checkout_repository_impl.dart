@@ -1,6 +1,7 @@
 import 'dart:developer';
 import 'package:ark_module_checkout/ark_module_checkout.dart';
 import 'package:ark_module_checkout/src/core/exception_handling.dart';
+import 'package:ark_module_checkout/src/domain/entities/payment_method_entity.dart';
 import 'package:dartz/dartz.dart';
 import 'package:ark_module_checkout/src/core/failures.dart';
 
@@ -23,5 +24,10 @@ class ArkCheckoutRepositoryImpl implements ArkCheckoutRepository {
       log("ERROR CHECKOUT REPO CHECK COUPON: ${e.toString()}");
       return ExceptionHandleResponse.execute(e);
     }
+  }
+
+  @override
+  Stream<List<PaymentMethodEntity>> streamPaymentMehtod() {
+    return dataSource.streamPaymentMethod();
   }
 }

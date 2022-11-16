@@ -49,7 +49,9 @@ class CouponDataDTO extends CouponDataEntity {
         usageCount: json["usage_count"] ?? "0",
         individualUse: json["individual_use"] ?? "",
         productIds: json["product_ids"],
-        usageLimit: json["usage_limit"] ?? "0",
+        usageLimit: json["usage_limit"] == null || json["usage_limit"] == "0"
+            ? "9999"
+            : json["usage_limit"],
         usageLimitPerUser: json["usage_limit_per_user"] ?? "0",
         limitUsageToXItems: json["limit_usage_to_x_items"] ?? "",
         freeShipping: json["free_shipping"] ?? "",
