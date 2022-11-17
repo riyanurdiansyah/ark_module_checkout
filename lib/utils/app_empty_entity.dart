@@ -1,7 +1,19 @@
 import 'package:ark_module_checkout/ark_module_checkout.dart';
 import 'package:ark_module_checkout/src/domain/entities/course_coin_entity.dart';
 import 'package:ark_module_checkout/src/domain/entities/payment_method_entity.dart';
+import 'package:ark_module_checkout/src/domain/entities/waiting_order_entity.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+
+final WaitingOrderEntity emptyWaitingOrder = WaitingOrderEntity(
+  success: false,
+  data: DataWaitingOrderEntity(
+    orderTotal: "0",
+    mtPaymentUrl: "",
+    createdAt: "",
+    discountTotal: 0,
+    status: "on-hold",
+  ),
+);
 
 final PaymentMethodEntity emptyPaymentMethod = PaymentMethodEntity(
   chanel: '',
@@ -81,6 +93,7 @@ final CourseDataEntity courseEmpty = CourseDataEntity(
     coinDescription: "",
     coinValue: "",
   ),
+  productId: "",
 );
 
 final CoinEntity coinEmpty = CoinEntity(

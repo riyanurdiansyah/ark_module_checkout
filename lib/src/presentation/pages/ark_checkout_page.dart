@@ -913,7 +913,7 @@ class ArkCheckoutPage extends StatelessWidget {
                                 .isEmpty ||
                             _checkoutC.selectedPaymentMethod.value.id == 99
                         ? null
-                        : () async {},
+                        : () => _checkoutC.order(),
                     child: const Text(
                       'Bayar',
                       style: TextStyle(

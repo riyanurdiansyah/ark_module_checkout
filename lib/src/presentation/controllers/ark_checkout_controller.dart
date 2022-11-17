@@ -10,6 +10,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
+import 'package:package_info/package_info.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class ArkCheckoutController extends GetxController {
@@ -36,6 +37,9 @@ class ArkCheckoutController extends GetxController {
 
   final Rx<String> _token = ''.obs;
   Rx<String> get token => _token;
+
+  final Rx<String> _version = ''.obs;
+  Rx<String> get version => _version;
 
   final Rx<String> _errorMsgCoupon = ''.obs;
   Rx<String> get errorMsgCoupon => _errorMsgCoupon;
@@ -105,10 +109,14 @@ class ArkCheckoutController extends GetxController {
 
   @override
   void onInit() async {
-    _changeLoading(true);
     await _setup();
     await _changeLoading(false);
     super.onInit();
+  }
+
+  Future getVersion() async {
+    PackageInfo packageInfo = await PackageInfo.fromPlatform();
+    _version.value = packageInfo.version;
   }
 
   Future _changeLoading(bool val) async {
@@ -141,6 +149,7 @@ class ArkCheckoutController extends GetxController {
       _detailCourse.value = CourseDataDTO.fromJson(Get.arguments);
       _price.value = getPrice;
     }
+    await getVersion();
   }
 
   Stream<CoinEntity> streamCoin() {
@@ -303,6 +312,113 @@ class ArkCheckoutController extends GetxController {
             _paymentMethod.indexWhere((e) => e.chanel == "bacs")];
       } else {
         _maxCoin.value = _coin.value.coins;
+      }
+    }
+  }
+
+  Future order() async {
+    double discCoupon = 0.0;
+    String status = "on-hold";
+    String paymentMethodTitle =
+        "${selectedPaymentMethod.value.chanel} (App v${_version.value})";
+    if (_isUsingCoupon.value) {
+      paymentMethodTitle = "Kupon (App v${_version.value})";
+      if (_couponDetail.value.data.discountType == "percent") {
+        discCoupon = (double.parse(_couponDetail.value.data.amount) / 100) *
+            _price.value;
+
+        if (double.parse(_couponDetail.value.data.amount) == 100) {
+          status = "completed";
+        }
+      } else {
+        discCoupon = double.parse(_couponDetail.value.data.amount);
+      }
+    }
+
+    if (_isUsingCoin.value && _maxCoin.value >= _price.value) {
+      status = "completed";
+    }
+
+    final body = {
+      "customer_id": _userId.value,
+      "status": status,
+      "billing": {
+        "first_name": _tcName.text,
+        "last_name": '',
+        "email": _tcEmail.text,
+        "phone": _tcHp.text,
+      },
+      "payment_method": _selectedPaymentMethod.value.chanel,
+      "payment_method_title": paymentMethodTitle,
+      "line_items": [
+        {
+          "product_id": _detailCourse.value.productId,
+          "quantity": 1,
+          "sku": "-",
+          "image_url": "https://arkademi.com",
+        }
+      ],
+      "coupon_lines": [
+        {
+          "code": _isUsingCoupon.value ? _couponDetail.value.data.code : "",
+          "discount": _isUsingCoupon.value ? discCoupon.toString() : "0",
+        }
+      ],
+      "fee_lines": [
+        {
+          "name": "Diskon",
+          "tax_status": "taxable",
+          "amount": (-randomNumber.value).toString(),
+          "total": (-randomNumber.value).toString()
+        },
+        {
+          "name": "Flash Sale",
+          "tax_status": "taxable",
+          "amount": "0",
+          "total": "0"
+        },
+        {
+          "name": "Coins",
+          "tax_status": "taxable",
+          "amount": _isUsingCoin.value ? _maxCoin.value : 0,
+          "total": _isUsingCoin.value ? _maxCoin.value : 0,
+        }
+      ],
+      "cashback": _isUsingCoin.value || _isUsingCoupon.value
+          ? 0
+          : double.parse(_detailCourse.value.coinCashback).toInt(),
+    };
+
+    if (_selectedPaymentMethod.value.chanel == "xendit-ovo" &&
+        (_tcHp.text.length < 11 || _tcHp.text.length > 13)) {
+      AppDialog.loadingFailed(
+        title: "Pembayaran OVO harus menggunakan nomor yang valid",
+      );
+      Future.delayed(const Duration(seconds: 2), () {
+        Get.back();
+      });
+    } else {
+      if (_isEditedTextField.value) {
+        AppDialog.loadingFailed(title: "Silahkan simpan data yang diubah");
+        Future.delayed(const Duration(seconds: 2), () {
+          Get.back();
+        });
+      } else {
+        final response = await _useCase.order(_token.value, body);
+        response.fold((fail) {
+          ExceptionHandle.execute(fail);
+        }, (data) {
+          Get.toNamed(
+            "/ark-waiting-order",
+            arguments: [
+              data,
+              _selectedPaymentMethod.value,
+              _isUsingCoin.value,
+              _coin.value.coins,
+              _maxCoin.value,
+            ],
+          );
+        });
       }
     }
   }

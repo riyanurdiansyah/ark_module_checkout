@@ -11,3 +11,7 @@ const String apiGatewayUrl = "https://api-gateway.arkademi.com";
 const String apiOrderUrl = "https://api-orders.arkademi.com";
 
 const String checkCouponUrl = "$apiOrderUrl/api/v1/wc/coupons/check";
+
+const String createOrderUrl = "$apiOrderUrl/api/v1/wc/orders/create";
+
+const String checkStatusOrderUrl = "$apiOrderUrl/api/v1/wc/orders/check";

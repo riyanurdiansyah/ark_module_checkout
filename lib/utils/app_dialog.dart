@@ -3,11 +3,11 @@ import 'package:get/get.dart';
 import 'package:lottie/lottie.dart';
 
 class AppDialog {
-  static loadingDialog({String? title}) {
+  static loadingDialog({String? title, bool? dissmiss}) {
     return Get.defaultDialog(
       radius: 8,
       onWillPop: () async => false,
-      barrierDismissible: false,
+      barrierDismissible: dissmiss ?? false,
       middleText: '',
       title: '',
       titleStyle: const TextStyle(fontSize: 0),
@@ -30,10 +30,10 @@ class AppDialog {
     );
   }
 
-  static loadingFailed({String? title}) {
+  static loadingFailed({String? title, bool? dissmiss}) {
     return Get.defaultDialog(
       onWillPop: () async => false,
-      barrierDismissible: false,
+      barrierDismissible: dissmiss ?? false,
       radius: 8,
       middleText: '',
       title: '',
@@ -59,10 +59,10 @@ class AppDialog {
     );
   }
 
-  static loadingSuccess({String? title}) {
+  static loadingSuccess({String? title, bool? dissmiss}) {
     return Get.defaultDialog(
       onWillPop: () async => false,
-      barrierDismissible: false,
+      barrierDismissible: dissmiss ?? false,
       radius: 8,
       middleText: '',
       title: '',
