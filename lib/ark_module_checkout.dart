@@ -5,6 +5,7 @@ export 'src/presentation/controllers/ark_waiting_order_controller.dart';
 
 export 'src/presentation/pages/ark_checkout_page.dart';
 export 'src/presentation/pages/ark_waiting_order_page.dart';
+export 'src/presentation/pages/ark_snap_payment_page.dart';
 
 export 'src/data/datasources/ark_checkout_remote_datasource.dart';
 export 'src/data/datasources/ark_checkout_remote_datasource_impl.dart';

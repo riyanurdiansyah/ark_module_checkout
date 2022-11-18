@@ -1,7 +1,6 @@
 import 'dart:developer';
 import 'package:ark_module_checkout/src/core/exception.dart';
 import 'package:ark_module_checkout/src/core/failures.dart';
-import 'package:dartz/dartz.dart';
 import 'package:dio/dio.dart';
 
 /*
@@ -25,15 +24,13 @@ class ExceptionHandle {
   jika terjadi error pada proses try catch
 */
 class ExceptionHandleResponse {
-  static execute(Object e) {
+  HttpFailure execute(Object e) {
     if (e is CustomException) {
-      return Left(HttpFailure(e.code, e.message));
+      return HttpFailure(e.code, e.message);
     } else {
-      return const Left(
-        HttpFailure(
-          500,
-          'Error... failed connect to server \nPlease check your connection',
-        ),
+      return const HttpFailure(
+        500,
+        'Error... failed connect to server \nPlease check your connection',
       );
     }
   }

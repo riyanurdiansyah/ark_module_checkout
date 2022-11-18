@@ -4,6 +4,7 @@ import 'dart:math' as math;
 import 'package:ark_module_checkout/ark_module_checkout.dart';
 import 'package:ark_module_checkout/src/core/exception_handling.dart';
 import 'package:ark_module_checkout/src/domain/entities/payment_method_entity.dart';
+import 'package:ark_module_checkout/src/domain/entities/waiting_order_entity.dart';
 import 'package:ark_module_checkout/utils/app_dialog.dart';
 import 'package:ark_module_checkout/utils/app_empty_entity.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -101,6 +102,12 @@ class ArkCheckoutController extends GetxController {
   final TextEditingController _tcHp = TextEditingController();
   TextEditingController get tcHp => _tcHp;
 
+  final Rx<WaitingOrderEntity> _waitingOrder = emptyWaitingOrder.obs;
+  Rx<WaitingOrderEntity> get waitingOrder => _waitingOrder;
+
+  final Rx<int> _orderId = 0.obs;
+  Rx<int> get orderId => _orderId;
+
   late SharedPreferences _prefs;
 
   late ArkCheckoutUseCase _useCase;
@@ -196,6 +203,7 @@ class ArkCheckoutController extends GetxController {
 
         ///IF RESPONSE IS ERROR
         (fail) {
+      Get.back();
       ExceptionHandle.execute(fail);
       AppDialog.loadingFailed(title: "Gagal... silahkan coba lagi");
       Future.delayed(const Duration(milliseconds: 1500), () {
@@ -408,6 +416,7 @@ class ArkCheckoutController extends GetxController {
         response.fold((fail) {
           ExceptionHandle.execute(fail);
         }, (data) {
+          _orderId.value = data;
           Get.toNamed(
             "/ark-waiting-order",
             arguments: [

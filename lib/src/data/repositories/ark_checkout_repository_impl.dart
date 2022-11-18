@@ -23,7 +23,7 @@ class ArkCheckoutRepositoryImpl implements ArkCheckoutRepository {
       return Right(coupon);
     } catch (e) {
       log("ERROR CHECKOUT REPO CHECK COUPON: ${e.toString()}");
-      return ExceptionHandleResponse.execute(e);
+      return Left(ExceptionHandleResponse().execute(e));
     }
   }
 
@@ -40,7 +40,7 @@ class ArkCheckoutRepositoryImpl implements ArkCheckoutRepository {
       return Right(order);
     } catch (e) {
       log("ERROR CHECKOUT REPO ORDER : ${e.toString()}");
-      return ExceptionHandleResponse.execute(e);
+      return Left(ExceptionHandleResponse().execute(e));
     }
   }
 
@@ -52,7 +52,7 @@ class ArkCheckoutRepositoryImpl implements ArkCheckoutRepository {
       return Right(status);
     } catch (e) {
       log("ERROR CHECKOUT REPO CHECK STATUS : ${e.toString()}");
-      return ExceptionHandleResponse.execute(e);
+      return Left(ExceptionHandleResponse().execute(e));
     }
   }
 }

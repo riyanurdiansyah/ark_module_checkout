@@ -13,6 +13,7 @@ import 'package:get/get.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class ArkWaitingOrderController extends GetxController {
+  final _checkoutC = Get.find<ArkCheckoutController>();
   PaymentMethodEntity _selectedPaymentMethod = emptyPaymentMethod;
   PaymentMethodEntity get selectedPaymentMethod => _selectedPaymentMethod;
 
@@ -94,6 +95,7 @@ class ArkWaitingOrderController extends GetxController {
       (fail) => ExceptionHandle.execute(fail),
       (data) async {
         _waitingOrder.value = data;
+        _checkoutC.waitingOrder.value = data;
         final status = data.data.status.toLowerCase();
         final mtUrl = data.data.mtPaymentUrl;
 
@@ -175,12 +177,8 @@ class ArkWaitingOrderController extends GetxController {
               });
             }
             _timer.cancel();
-            // Get.to(
-            //   () => MidtransSnap(
-            //     isPrepTest: isPreptest,
-            //     snapUrl: danaUrl['action']['mobile_web_checkout_url'],
-            //   ),
-            // );
+            Get.offNamed("/ark-snap-payment",
+                arguments: danaUrl['action']['mobile_web_checkout_url']);
           }
         }
 
@@ -197,12 +195,7 @@ class ArkWaitingOrderController extends GetxController {
             }
 
             _timer.cancel();
-            // Get.to(
-            //   () => MidtransSnap(
-            //     isPrepTest: isPreptest,
-            //     snapUrl: mtUrl,
-            //   ),
-            // );
+            Get.offNamed("/ark-snap-payment", arguments: mtUrl);
           }
         }
 
@@ -219,13 +212,8 @@ class ArkWaitingOrderController extends GetxController {
             }
 
             _timer.cancel();
-            // Get.to(
-            //   () => MidtransSnap(
-            //     isPrepTest: isPreptest,
-            //     snapUrl: '$mtUrl$typePayment',
-            //   ),
-            // );
-            // log('CREDIT CARD');
+            Get.offNamed("/ark-snap-payment",
+                arguments: "$mtUrl${_selectedPaymentMethod.code}");
           }
         }
       },
