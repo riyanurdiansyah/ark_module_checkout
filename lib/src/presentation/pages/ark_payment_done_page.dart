@@ -315,12 +315,14 @@ class ArkPaymentDonePage extends StatelessWidget {
           padding: const EdgeInsets.all(15),
           child: InkWell(
             onTap: () {
-              Get.delete<ArkCheckoutController>();
-              if (_checkoutC.detailCourse.value.courseFlag.jrc == '1') {
-                Get.offNamed("/ark-course-jrc");
-              } else {
-                Get.offNamed("/ark-course");
-              }
+              Get.back();
+              Get.back();
+              // Get.delete<ArkCheckoutController>();x
+              // if (_checkoutC.detailCourse.value.courseFlag.jrc == '1') {
+              //   Get.offNamed("/ark-course-jrc");
+              // } else {
+              //   Get.offNamed("/ark-course");
+              // }
             },
             child: Container(
               alignment: Alignment.center,

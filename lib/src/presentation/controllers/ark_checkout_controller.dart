@@ -431,4 +431,28 @@ class ArkCheckoutController extends GetxController {
       }
     }
   }
+
+  // void fnSaveDataDiri() async {
+  //   try {
+  //     final body = {
+  //       "nama_lengkap": _tcName.text,
+  //       "no_hp": _tcHp.text,
+  //     };
+  //     final response = await http.put(
+  //       Uri.parse(
+  //         '$apiMemberUrl/api/v1/auth/update/profile',
+  //       ),
+  //       headers: {
+  //         "Authorization": _aC.token.value,
+  //         "Accept": 'application/json'
+  //       },
+  //       body: body,
+  //     );
+  //     if (response.statusCode == 200) {
+  //       await prefs.setString('user_hp', txHandPhoneController.value.text);
+  //     }
+  //   } catch (e) {
+  //     AppPrint.debugPrint("ERROR UPDATE PROFILE : ${e.toString()}");
+  //   }
+  // }
 }

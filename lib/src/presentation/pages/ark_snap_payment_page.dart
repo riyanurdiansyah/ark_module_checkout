@@ -3,9 +3,9 @@ import 'dart:developer';
 import 'package:ark_module_checkout/src/presentation/pages/ark_payment_done_page.dart';
 import 'package:ark_module_checkout/utils/app_text.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 import 'package:get/get.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:webview_flutter/webview_flutter.dart';
 
 class ArkSnapPaymentPage extends StatelessWidget {
   const ArkSnapPaymentPage({
@@ -19,7 +19,7 @@ class ArkSnapPaymentPage extends StatelessWidget {
   Widget build(BuildContext context) {
     var isLoading = true.obs;
     var progress = 0.obs;
-
+    log("INI URL : $url");
     return WillPopScope(
       onWillPop: () async {
         Get.off(() => ArkPaymentDonePage());
@@ -37,36 +37,30 @@ class ArkSnapPaymentPage extends StatelessWidget {
         ),
         body: Stack(
           children: [
-            InAppWebView(
-              initialUrlRequest: URLRequest(url: Uri.parse(url)),
-              onProgressChanged: (_, prog) {
-                progress.value = prog;
-                if (prog == 100) {
-                  isLoading.value = false;
-                }
-                log("PROGRESS : $prog");
+            WebView(
+              onPageStarted: (_) {
+                isLoading.value = false;
               },
-              shouldOverrideUrlLoading: (_, nav) async {
-                var uri = nav.request.url;
-                log("URL : ${uri!.host}");
-                if (uri.host.contains('gojek://') ||
-                    uri.host.contains('shopee')) {
-                  launchUrl(uri);
-                }
-              },
-              onWebViewCreated: (controller) {},
-              onLoadStart: (controller, uri) {
-                log("URL : ${uri!.host}");
-                if (uri.host.contains('gojek://') ||
-                    uri.host.contains('shopee')) {
-                  launchUrl(uri);
-                }
-              },
-              onLoadStop: (_, uri) async {
-                log("URL : ${uri!.host}");
-                if (uri.host.contains('gojek://') ||
-                    uri.host.contains('shopee')) {
-                  launchUrl(uri);
+              initialUrl: url,
+              javascriptMode: JavascriptMode.unrestricted,
+              navigationDelegate: (NavigationRequest request) async {
+                if (request.url.contains('gojek://')) {
+                  log("CHECK URL GOPAY : ${request.url}");
+                  launchUrl(Uri.parse(request.url),
+                      mode: LaunchMode.externalApplication);
+                  return NavigationDecision.prevent;
+                } else if (request.url.contains('gojek')) {
+                  Get.off(() => ArkPaymentDonePage());
+                  launchUrl(Uri.parse(request.url),
+                      mode: LaunchMode.externalApplication);
+                  return NavigationDecision.prevent;
+                } else if (request.url.contains('shopee')) {
+                  Get.off(() => ArkPaymentDonePage());
+                  launchUrl(Uri.parse(request.url),
+                      mode: LaunchMode.externalApplication);
+                  return NavigationDecision.prevent;
+                } else {
+                  return NavigationDecision.navigate;
                 }
               },
             ),
