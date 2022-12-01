@@ -1,5 +1,3 @@
-import 'dart:developer';
-
 import 'package:ark_module_checkout/src/presentation/pages/ark_payment_done_page.dart';
 import 'package:ark_module_checkout/utils/app_text.dart';
 import 'package:flutter/material.dart';
@@ -19,7 +17,6 @@ class ArkSnapPaymentPage extends StatelessWidget {
   Widget build(BuildContext context) {
     var isLoading = true.obs;
     var progress = 0.obs;
-    log("INI URL : $url");
     return WillPopScope(
       onWillPop: () async {
         Get.off(() => ArkPaymentDonePage());
@@ -45,7 +42,6 @@ class ArkSnapPaymentPage extends StatelessWidget {
               javascriptMode: JavascriptMode.unrestricted,
               navigationDelegate: (NavigationRequest request) async {
                 if (request.url.contains('gojek://')) {
-                  log("CHECK URL GOPAY : ${request.url}");
                   launchUrl(Uri.parse(request.url),
                       mode: LaunchMode.externalApplication);
                   return NavigationDecision.prevent;
@@ -58,6 +54,21 @@ class ArkSnapPaymentPage extends StatelessWidget {
                   Get.off(() => ArkPaymentDonePage());
                   launchUrl(Uri.parse(request.url),
                       mode: LaunchMode.externalApplication);
+                  return NavigationDecision.prevent;
+                } else if (request.url
+                    .contains('https://arkademi.com/?order_id=')) {
+                  Get.offNamed("/ark-midtrans-payment");
+                  return NavigationDecision.prevent;
+                } else if (request.url.contains('https://arkademi.com')) {
+                  Get.offNamed("/ark-midtrans-payment");
+                  return NavigationDecision.prevent;
+                } else if (request.url.contains('http://example.com')) {
+                  Get.offNamed("/ark-midtrans-payment");
+                  return NavigationDecision.prevent;
+                } else if (request.url.contains('http://example.com')) {
+                  // AppPrint.debugPrint('blocking navigation to $request}');
+                  // Get.off(() => MidtransPayment(isPrepTest: isPrepTest));
+                  Get.offNamed("/ark-midtrans-payment");
                   return NavigationDecision.prevent;
                 } else {
                   return NavigationDecision.navigate;

@@ -57,11 +57,18 @@ class ArkCheckoutRemoteDataSourceImpl implements ArkCheckoutRemoteDataSource {
       },
       options: dioOptions(),
     );
+    log("CHECK COUP : ${response.statusCode}");
     int code = response.statusCode ?? 500;
     if (code == 200) {
-      if (response.data['success']) {
+      if (response.data['success'] == true) {
         return CouponDTO.fromJson(response.data);
       }
+      return CouponDTO.fromJson({
+        "success": false,
+        "data": {},
+      });
+    }
+    if (code == 400) {
       return CouponDTO.fromJson({
         "success": false,
         "data": {},

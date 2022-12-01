@@ -327,10 +327,10 @@ class ArkCheckoutController extends GetxController {
   Future order() async {
     double discCoupon = 0.0;
     String status = "on-hold";
-    String paymentMethodTitle =
-        "${selectedPaymentMethod.value.chanel} (App v${_version.value})";
+    String title =
+        "${selectedPaymentMethod.value.title} (App v${_version.value})";
     if (_isUsingCoupon.value) {
-      paymentMethodTitle = "Kupon (App v${_version.value})";
+      title = "Kupon (App v${_version.value})";
       if (_couponDetail.value.data.discountType == "percent") {
         discCoupon = (double.parse(_couponDetail.value.data.amount) / 100) *
             _price.value;
@@ -354,10 +354,10 @@ class ArkCheckoutController extends GetxController {
         "first_name": _tcName.text,
         "last_name": '',
         "email": _tcEmail.text,
-        "phone": _tcHp.text,
+        "phone": newFormatHp,
       },
       "payment_method": _selectedPaymentMethod.value.chanel,
-      "payment_method_title": paymentMethodTitle,
+      "payment_method_title": title,
       "line_items": [
         {
           "product_id": _detailCourse.value.productId,
@@ -432,27 +432,15 @@ class ArkCheckoutController extends GetxController {
     }
   }
 
-  // void fnSaveDataDiri() async {
-  //   try {
-  //     final body = {
-  //       "nama_lengkap": _tcName.text,
-  //       "no_hp": _tcHp.text,
-  //     };
-  //     final response = await http.put(
-  //       Uri.parse(
-  //         '$apiMemberUrl/api/v1/auth/update/profile',
-  //       ),
-  //       headers: {
-  //         "Authorization": _aC.token.value,
-  //         "Accept": 'application/json'
-  //       },
-  //       body: body,
-  //     );
-  //     if (response.statusCode == 200) {
-  //       await prefs.setString('user_hp', txHandPhoneController.value.text);
-  //     }
-  //   } catch (e) {
-  //     AppPrint.debugPrint("ERROR UPDATE PROFILE : ${e.toString()}");
-  //   }
-  // }
+  String get newFormatHp {
+    if (_tcHp.text.isNotEmpty) {
+      if (_tcHp.text[0] == "0") {
+        return _tcHp.text.replaceFirst(r'0', '+62');
+      } else {
+        return "+62${_tcHp.text}";
+      }
+    } else {
+      return '+62';
+    }
+  }
 }
